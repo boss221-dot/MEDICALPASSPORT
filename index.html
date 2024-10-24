@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passeport Médical Recto-Verso</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .input-form {
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .input-form input, .input-form textarea, .input-form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .input-form button {
+            background-color: #003399;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-form button:hover {
+            background-color: #002266;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #003399;
+        }
+        .passport-container {
+            perspective: 1000px;
+            width: 8.6cm;
+            height: 5.4cm;
+            margin: 20px auto;
+        }
+        .passport-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .passport-front, .passport-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .passport-front {
+            background: linear-gradient(to bottom right, #003399, #001133);
+            color: white;
+        }
+        .passport-back {
+            background-color: #f0f0f0;
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .passport-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .flag {
+            width: 20px;
+            height: 15px;
+            margin-right: 10px;
+            background-color: #fff;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAPCAIAAABr+ngCAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AkFCQQWWqhDKAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAZUlEQVQoz+3SsQ3AIAxEUU8WIwtlBEagYwBGYKSswAiMQEfHAEQCShQp5cr3pDs9ybbMTBIAJNWQVOv/dUQE8MR2kcyMiLpfPnlkVX2dHxFjjNbaWquqOueMMeacY4zufp13/9wNz5oIX/YZhGIAAAAASUVORK5CYII=');
+            background-size: cover;
+        }
+        .passport-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .passport-body {
+            font-size: 12px;
+        }
+        .info-row {
+            margin-bottom: 5px;
+        }
+        .photo-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 2.5cm;
+            height: 3cm;
+            background-color: #fff;
+            border: 2px solid #fff;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            background-color: #003399;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .action-buttons button:hover {
+            background-color: #002266;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .passport-container, .passport-container * {
+                visibility: visible;
+            }
+            .passport-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-form">
+            <h2>Informations du Passeport Médical</h2>
+            
+            <div class="section-title">Informations Personnelles</div>
+            <input type="text" id="inputName" placeholder="Nom complet">
+            <input type="text" id="inputFirstName" placeholder="Prénom(s)">
+            <input type="date" id="inputBirth">
+            <select id="inputSex">
+                <option value="">Sélectionnez le sexe</option>
+                <option value="M">Masculin</option>
+                <option value="F">Féminin</option>
+                <option value="A">Autre</option>
+            </select>
+            <input type="file" id="inputPhoto" accept="image/*">
+
+            <div class="section-title">Informations de Contact</div>
+            <input type="text" id="inputAddress" placeholder="Adresse">
+            <input type="tel" id="inputPhone" placeholder="Numéro de téléphone">
+            <input type="email" id="inputEmail" placeholder="Email">
+            <input type="text" id="inputEmergencyContact" placeholder="Contact d'urgence">
+
+            <div class="section-title">Informations Médicales Essentielles</div>
+            <input type="text" id="inputBloodType" placeholder="Groupe sanguin">
+            <textarea id="inputAllergies" placeholder="Allergies"></textarea>
+            <textarea id="inputChronicDiseases" placeholder="Maladies chroniques"></textarea>
+            <textarea id="inputCurrentMedications" placeholder="Médicaments actuels"></textarea>
+
+            <button onclick="generatePassport()">Générer le passeport</button>
+        </div>
+
+        <div class="passport-container">
+            <div class="passport-card" id="passportCard">
+                <div class="passport-front">
+                    <div class="passport-header">
+                        <div class="flag"></div>
+                        <div class="passport-title">Passeport Médical</div>
+                    </div>
+                    <div class="passport-body">
+                        <div class="info-row">Nom: <span id="displayName"></span></div>
+                        <div class="info-row">Prénom: <span id="displayFirstName"></span></div>
+                        <div class="info-row">Date de Naissance: <span id="displayBirth"></span></div>
+                        <div class="info-row">Sexe: <span id="displaySex"></span></div>
+                        <div class="info-row">Groupe sanguin: <span id="displayBloodType"></span></div>
+                        <div class="info-row">Allergies: <span id="displayAllergies"></span></div>
+                    </div>
+                    <div class="photo-container">
+                        <img id="patientPhoto" src="default-avatar.png" alt="Photo du patient" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                </div>
+                <div class="passport-back">
+                    <div id="qrcode"></div>
+                </div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button class="flip-button" onclick="flipCard()">Retourner la carte</button>
+            <button onclick="downloadPassport()">Télécharger</button>
+            <button onclick="printPassport()">Imprimer</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('inputPhoto').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('patientPhoto').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function flipCard() {
+            const card = document.getElementById('passportCard');
+            card.style.transform = card.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+        }
+
+        function generatePassport() {
+            const data = {
+                name: document.getElementById('inputName').value,
+                firstName: document.getElementById('inputFirstName').value,
+                birth: document.getElementById('inputBirth').value,
+                sex: document.getElementById('inputSex').value,
+                address: document.getElementById('inputAddress').value,
+                phone: document.getElementById('inputPhone').value,
+                email: document.getElementById('inputEmail').value,
+                emergencyContact: document.getElementById('inputEmergencyContact').value,
+                bloodType: document.getElementById('inputBloodType').value,
+                allergies: document.getElementById('inputAllergies').value,
+                chronicDiseases: document.getElementById('inputChronicDiseases').value,
+                currentMedications: document.getElementById('inputCurrentMedications').value
+            };
+            
+            // Afficher les informations sur la carte
+            document.getElementById('displayName').textContent = data.name;
+            document.getElementById('displayFirstName').textContent = data.firstName;
+            document.getElementById('displayBirth').textContent = data.birth;
+            document.getElementById('displaySex').textContent = data.sex;
+            document.getElementById('displayBloodType').textContent = data.bloodType;
+            document.getElementById('displayAllergies').textContent = data.allergies;
+            
+            // Générer le QR code
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: JSON.stringify(data),
+                width: 200,
+                height: 200,
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadPassport() {
+            html2canvas(document.querySelector(".passport-container")).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'passeport_medical.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function printPassport() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
